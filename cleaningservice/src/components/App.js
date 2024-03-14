@@ -9,7 +9,9 @@ const App = () => {
   return (
     <div className="App">
       <Header /> 
-      <main className='main-content'></main>
+      <main className='main-content'>
+      <body>
+      </body></main>
       <Footer />
     </div>
   );
