@@ -1,0 +1,23 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.header {
+    position: relative; /* This ensures that the absolute child is positioned relative to this parent */
+  }
+  
+  /* Tailwind CSS */
+html, body {
+    height: 100%;
+  }
+  
+  #root, body, .site-container { /* Adjust the .site-container to your root div if it's different */
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+  
+  .main-content {
+    flex: 1; /* This will push the footer to the bottom */
+  }
+  
