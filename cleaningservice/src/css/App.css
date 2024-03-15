@@ -2,6 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
+
+.App { /* Previously #root, ensuring it matches your React root class */
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
 .header {
     position: relative; /* This ensures that the absolute child is positioned relative to this parent */
   }
@@ -9,9 +16,10 @@
   /* Tailwind CSS */
 html, body {
     height: 100%;
+    margin: 0;
   }
   
-  #root, body, .site-container { /* Adjust the .site-container to your root div if it's different */
+  #root{ /* Adjust the .site-container to your root div if it's different */
     display: flex;
     flex-direction: column;
     min-height: 100vh;
@@ -21,3 +29,7 @@ html, body {
     flex: 1; /* This will push the footer to the bottom */
   }
   
+  .footer { /* Ensures the footer aligns with your current Tailwind classes */
+    background-color: #f3f4f6; /* bg-gray-200 */
+    padding: 1.5rem; /* p-6 */
+}

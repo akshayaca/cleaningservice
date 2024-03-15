@@ -21,7 +21,7 @@ const Header = () => {
         {/* Right portion with login icon, only show the icon on smaller screens */}
         <div className="flex justify-end items-center">
           <FaUser className="text-xl" />
-          <span className="ml-2 text-xl hidden sm:inline">Login</span>
+          <span className="ml-2 text-xl hidden sm:inline">Account</span>
         </div>
       </div>
     </header>
