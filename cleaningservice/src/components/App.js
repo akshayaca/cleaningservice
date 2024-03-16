@@ -10,12 +10,10 @@ const App = () => {
   return (
     <div className="App">
       <Header /> 
-      <body>
       <main className='main-content'>
       
       <Layout />
      </main>
-      </body>
       <Footer />
     </div>
   );
