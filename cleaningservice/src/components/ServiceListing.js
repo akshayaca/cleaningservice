@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FaEllipsisH, FaFilter, FaUserTie, FaUser } from 'react-icons/fa';
+import { useHistory } from 'react-router-dom';
 import livingRoomImage from '../Image/LivingRoom.png';
 
 const FilterOptions = {
@@ -23,6 +24,7 @@ const today = new Date();
 const endOfWeek = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 7 - today.getDay());
 
 const ServiceListing = () => {
+  const history = useHistory();
   const [timeFilter, setTimeFilter] = useState(FilterOptions.TIME.ALL_TIME);
   const [statusFilter, setStatusFilter] = useState(FilterOptions.STATUS.ALL_STATUS);
   const [requestedByFilter, setRequestedByFilter] = useState('');
@@ -87,6 +89,7 @@ const ServiceListing = () => {
     return matchesTimeFilter && matchesStatusFilter && matchesRequestedByFilter;
   
   });
+  
 
   const renderFilterMenu = () => (
     <div ref={filterMenuRef} className="absolute right-0 mt-2 py-2 w-48 bg-white rounded-md shadow-xl z-20">
@@ -129,6 +132,9 @@ const ServiceListing = () => {
     }
     return title;
   };
+  const navigateToDetails = (id) => {
+    history.push(`/request/${id}`);
+  };
 
 
   return (
@@ -158,6 +164,8 @@ const ServiceListing = () => {
             className="flex items-center p-4 border-b border-gray-200 transition-all duration-300 hover:bg-gray-100 cursor-pointer transform hover:scale-105"
             onClick={() => console.log(`Opening details for request #${request.id + 1}`)}
           >
+          <div className="flex-1 flex items-center cursor-pointer" onClick={() => navigateToDetails(request.id)}>
+        
             {/* Indicator Icon */}
             <div className="mr-3 flex-shrink-0">
               {request.isLandlord ? (
@@ -186,6 +194,7 @@ const ServiceListing = () => {
               <div className="rounded-full p-2 hover:bg-gray-300 transition-colors duration-300">
                 <FaEllipsisH className="text-lg text-gray-600" />
               </div>
+            </div>
             </div>
           </li>
         ))}
