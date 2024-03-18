@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FaEllipsisH, FaFilter } from 'react-icons/fa';
+import { FaEllipsisH, FaFilter, FaUserTie, FaUser } from 'react-icons/fa';
 import livingRoomImage from '../Image/LivingRoom.png';
 
 const FilterOptions = {
@@ -12,6 +12,10 @@ const FilterOptions = {
     ONGOING: 'Ongoing',
     PAST: 'Past',
     ALL_STATUS: 'All status'
+  },
+  REQUESTED_BY: {
+    LANDLORD: 'Landlord',
+    TENANT: 'Tenant'
   }
 };
 
@@ -21,6 +25,7 @@ const endOfWeek = new Date(today.getFullYear(), today.getMonth(), today.getDate(
 const ServiceListing = () => {
   const [timeFilter, setTimeFilter] = useState(FilterOptions.TIME.ALL_TIME);
   const [statusFilter, setStatusFilter] = useState(FilterOptions.STATUS.ALL_STATUS);
+  const [requestedByFilter, setRequestedByFilter] = useState('');
   const [showFilterMenu, setShowFilterMenu] = useState(false);
   const filterMenuRef = useRef(null);
 
@@ -43,6 +48,7 @@ const ServiceListing = () => {
     title: `Property Title ${index + 1}`,
     dueBy: new Date(new Date().setDate(new Date().getDate() + index)), // for demonstration, index days from now
     status: index % 2 === 0 ? 'Ongoing' : 'Past', // alternating status for demonstration
+    isLandlord: index % 2 === 0
   }));
 
   const applyFilter = (option, type) => {
@@ -50,6 +56,8 @@ const ServiceListing = () => {
       setTimeFilter(option);
     } else if (type === 'STATUS') {
       setStatusFilter(option);
+    } else if (type === 'REQUESTED_BY') {
+      setRequestedByFilter(option);
     }
     setShowFilterMenu(false);
   };
@@ -57,6 +65,7 @@ const ServiceListing = () => {
   const clearFilters = () => {
     setTimeFilter(FilterOptions.TIME.ALL_TIME);
     setStatusFilter(FilterOptions.STATUS.ALL_STATUS);
+    setRequestedByFilter('');
   };
 
   const filteredRequests = serviceRequests.filter((request) => {
@@ -69,7 +78,14 @@ const ServiceListing = () => {
     const matchesStatusFilter = (statusFilter === FilterOptions.STATUS.ALL_STATUS) ||
                                 (statusFilter === request.status);
 
-    return matchesTimeFilter && matchesStatusFilter;
+    
+    // Requested by filtering
+    const matchesRequestedByFilter = (!requestedByFilter) ||
+                                     (requestedByFilter === FilterOptions.REQUESTED_BY.LANDLORD && request.isLandlord) ||
+                                     (requestedByFilter === FilterOptions.REQUESTED_BY.TENANT && !request.isLandlord);
+
+    return matchesTimeFilter && matchesStatusFilter && matchesRequestedByFilter;
+  
   });
 
   const renderFilterMenu = () => (
@@ -94,8 +110,26 @@ const ServiceListing = () => {
           {option}
         </div>
       ))}
+      <div className="text-lg px-4 py-2 text-gray-800">Requested by</div>
+      {Object.values(FilterOptions.REQUESTED_BY).map((option) => (
+        <div
+          key={option}
+          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 cursor-pointer"
+          onClick={() => applyFilter(option, 'REQUESTED_BY')}
+        >
+          {option}
+        </div>
+ ))}
     </div>
   );
+
+  const truncateTitle = (title) => {
+    if (title.length > 25) {
+      return `${title.substring(0, 25)}...`;
+    }
+    return title;
+  };
+
 
   return (
     <div className="container mx-auto p-4 relative">
@@ -124,14 +158,22 @@ const ServiceListing = () => {
             className="flex items-center p-4 border-b border-gray-200 transition-all duration-300 hover:bg-gray-100 cursor-pointer transform hover:scale-105"
             onClick={() => console.log(`Opening details for request #${request.id + 1}`)}
           >
+            {/* Indicator Icon */}
+            <div className="mr-3 flex-shrink-0">
+              {request.isLandlord ? (
+                <FaUserTie className="text-lg" title="Landlord" />
+              ) : (
+                <FaUser className="text-lg" title="Tenant" />
+              )}
+            </div>
             <div className="flex-1 flex items-center">
               <img
                 src={livingRoomImage}
                 alt={`Service Request ${request.id + 1}`}
                 className="hidden sm:block h-12 w-24 object-cover mr-4 rounded-lg"
               />
-              <span>
-                Request from {request.title}
+              <span className="truncate" title={request.title}>
+                Request from   {truncateTitle(request.title)}
               </span>
             </div>
             <div className="flex items-center">
