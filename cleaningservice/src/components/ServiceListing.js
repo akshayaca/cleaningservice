@@ -12,6 +12,7 @@ const FilterOptions = {
   STATUS: {
     ONGOING: 'Ongoing',
     PAST: 'Past',
+    YET_TO_START: 'Yet to Start',
     ALL_STATUS: 'All status'
   },
   REQUESTED_BY: {
@@ -49,7 +50,7 @@ const ServiceListing = () => {
     id: index,
     title: `Property Title ${index + 1}`,
     dueBy: new Date(new Date().setDate(new Date().getDate() + index)), // for demonstration, index days from now
-    status: index % 2 === 0 ? 'Ongoing' : 'Past', // alternating status for demonstration
+    status: index % 3 === 0 ? 'Ongoing' : index % 3 === 1 ? 'Past' : 'Yet to Start', // alternating status for demonstration
     isLandlord: index % 2 === 0
   }));
 
@@ -77,8 +78,9 @@ const ServiceListing = () => {
                               (timeFilter === FilterOptions.TIME.THIS_WEEK && request.dueBy < endOfWeek);
 
     // Status filtering
-    const matchesStatusFilter = (statusFilter === FilterOptions.STATUS.ALL_STATUS) ||
-                                (statusFilter === request.status);
+    const matchesStatusFilter =statusFilter === (FilterOptions.STATUS.ALL_STATUS) ||
+                                                (statusFilter === request.status) ||
+                                                (statusFilter === FilterOptions.STATUS.YET_TO_START && request.status === 'Yet to Start');
 
     
     // Requested by filtering
@@ -188,7 +190,11 @@ const ServiceListing = () => {
               <span className="mr-4 whitespace-nowrap">
                 Due by {request.dueBy.toDateString()}
               </span>
-              <span className={`responsive-hide mr-4 whitespace-nowrap ${request.status === 'Past' ? 'text-red-500' : 'text-green-500'}`}>
+              <span className={`responsive-hide mr-4 whitespace-nowrap ${
+                request.status === 'Past' ? 'text-red-500' :
+                request.status === 'Ongoing' ? 'text-green-500' :
+                request.status === 'Yet to Start' ? 'text-yellow-500' : ''
+              }`}>
                 {request.status}
               </span>
               <div className="rounded-full p-2 hover:bg-gray-300 transition-colors duration-300">

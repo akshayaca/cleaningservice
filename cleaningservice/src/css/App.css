@@ -47,4 +47,7 @@ html, body {
   }
 }
 
+.status-past { color: red; }
+.status-ongoing { color: green; }
+.status-yet-to-start { color: yellow; }
 
