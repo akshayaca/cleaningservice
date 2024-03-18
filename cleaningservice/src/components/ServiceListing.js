@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FaEllipsisH, FaFilter, FaUserTie, FaUser } from 'react-icons/fa';
+import { useHistory } from 'react-router-dom';
 import livingRoomImage from '../Image/LivingRoom.png';
 
 const FilterOptions = {
@@ -11,6 +12,7 @@ const FilterOptions = {
   STATUS: {
     ONGOING: 'Ongoing',
     PAST: 'Past',
+    YET_TO_START: 'Yet to Start',
     ALL_STATUS: 'All status'
   },
   REQUESTED_BY: {
@@ -23,6 +25,7 @@ const today = new Date();
 const endOfWeek = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 7 - today.getDay());
 
 const ServiceListing = () => {
+  const history = useHistory();
   const [timeFilter, setTimeFilter] = useState(FilterOptions.TIME.ALL_TIME);
   const [statusFilter, setStatusFilter] = useState(FilterOptions.STATUS.ALL_STATUS);
   const [requestedByFilter, setRequestedByFilter] = useState('');
@@ -47,7 +50,7 @@ const ServiceListing = () => {
     id: index,
     title: `Property Title ${index + 1}`,
     dueBy: new Date(new Date().setDate(new Date().getDate() + index)), // for demonstration, index days from now
-    status: index % 2 === 0 ? 'Ongoing' : 'Past', // alternating status for demonstration
+    status: index % 3 === 0 ? 'Ongoing' : index % 3 === 1 ? 'Past' : 'Yet to Start', // alternating status for demonstration
     isLandlord: index % 2 === 0
   }));
 
@@ -75,8 +78,9 @@ const ServiceListing = () => {
                               (timeFilter === FilterOptions.TIME.THIS_WEEK && request.dueBy < endOfWeek);
 
     // Status filtering
-    const matchesStatusFilter = (statusFilter === FilterOptions.STATUS.ALL_STATUS) ||
-                                (statusFilter === request.status);
+    const matchesStatusFilter =statusFilter === (FilterOptions.STATUS.ALL_STATUS) ||
+                                                (statusFilter === request.status) ||
+                                                (statusFilter === FilterOptions.STATUS.YET_TO_START && request.status === 'Yet to Start');
 
     
     // Requested by filtering
@@ -87,6 +91,7 @@ const ServiceListing = () => {
     return matchesTimeFilter && matchesStatusFilter && matchesRequestedByFilter;
   
   });
+  
 
   const renderFilterMenu = () => (
     <div ref={filterMenuRef} className="absolute right-0 mt-2 py-2 w-48 bg-white rounded-md shadow-xl z-20">
@@ -129,7 +134,12 @@ const ServiceListing = () => {
     }
     return title;
   };
-
+const navigateToDetails = (request) => {
+  history.push({
+    pathname: `/request/${request.id}`,
+    state: { dueDate: request.dueBy, status: request.status } // Pass due date and status as state
+  });
+};
 
   return (
     <div className="container mx-auto p-4 relative">
@@ -158,6 +168,8 @@ const ServiceListing = () => {
             className="flex items-center p-4 border-b border-gray-200 transition-all duration-300 hover:bg-gray-100 cursor-pointer transform hover:scale-105"
             onClick={() => console.log(`Opening details for request #${request.id + 1}`)}
           >
+          <div className="flex-1 flex items-center cursor-pointer" onClick={() => navigateToDetails(request.id)}>
+        
             {/* Indicator Icon */}
             <div className="mr-3 flex-shrink-0">
               {request.isLandlord ? (
@@ -180,12 +192,17 @@ const ServiceListing = () => {
               <span className="mr-4 whitespace-nowrap">
                 Due by {request.dueBy.toDateString()}
               </span>
-              <span className={`responsive-hide mr-4 whitespace-nowrap ${request.status === 'Past' ? 'text-red-500' : 'text-green-500'}`}>
+              <span className={`responsive-hide mr-4 whitespace-nowrap ${
+                request.status === 'Past' ? 'text-red-500' :
+                request.status === 'Ongoing' ? 'text-green-500' :
+                request.status === 'Yet to Start' ? 'text-yellow-500' : ''
+              }`}>
                 {request.status}
               </span>
               <div className="rounded-full p-2 hover:bg-gray-300 transition-colors duration-300">
                 <FaEllipsisH className="text-lg text-gray-600" />
               </div>
+            </div>
             </div>
           </li>
         ))}
