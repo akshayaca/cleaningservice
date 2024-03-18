@@ -134,10 +134,12 @@ const ServiceListing = () => {
     }
     return title;
   };
-  const navigateToDetails = (id) => {
-    history.push(`/request/${id}`);
-  };
-
+const navigateToDetails = (request) => {
+  history.push({
+    pathname: `/request/${request.id}`,
+    state: { dueDate: request.dueBy, status: request.status } // Pass due date and status as state
+  });
+};
 
   return (
     <div className="container mx-auto p-4 relative">
