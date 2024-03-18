@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
-import { useLocation } from 'react-router-dom';
-import { FaArrowLeft, FaArrowRight, FaUpload } from 'react-icons/fa';
+
+import { FaArrowLeft, FaArrowRight } from 'react-icons/fa';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import Select from 'react-select';
@@ -10,8 +10,6 @@ import Modal from 'react-modal';
 import livingRoomImage from '../Image/LivingRoom.png';
 
 const RequestDetails = () => {
-  const location = useLocation();
-  const { dueDate, status } = location.state;
   const totalSlides = 8;
   const [currentSlide, setCurrentSlide] = useState(0);
   const [selectedImage, setSelectedImage] = useState(null);
@@ -120,16 +118,11 @@ const RequestDetails = () => {
       <div className="space-y-4">
         {/* Date Picker now represents the due date for the property from listing page */}
         <DatePicker
-        selected={dueDate} // Use dueDate from props
-        className="border p-2 rounded w-full"
-        disabled={true} // Assume it's for display purposes only
+          selected={new Date()} // This should dynamically represent the due date
+          onChange={(date) => console.log(date)}
+          className="border p-2 rounded w-full"
+          disabled={true} // Assume it's for display purposes only
         />
-
-        {/* Status display */}
-        <div className="text-sm font-medium text-gray-700 py-2">
-          Status: {status} {/* Display the status */}
-        </div>
-
 
         {/* Assignee Selector */}
         <Select
