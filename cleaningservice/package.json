@@ -22,7 +22,7 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "test:report": "CI=true JEST_JUNIT_OUTPUT=./test_results/jest_results.xml react-scripts test --env=jsdom --coverage",
+    "test:report": "react-scripts test --coverage --testResultsProcessor=\"jest-junit\"",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
