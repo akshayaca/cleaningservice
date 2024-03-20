@@ -1,6 +1,7 @@
+// Remove the export statement at the end of the file.
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import { BrowserRouter } from 'react-router-dom'; // Since we're using `useHistory`
+import { BrowserRouter } from 'react-router-dom';
 import ServiceListing from './ServiceListing';
 import '@testing-library/jest-dom';
 
@@ -14,7 +15,4 @@ describe('ServiceListing', () => {
 
     expect(screen.getByRole('heading', { name: /service requests/i })).toBeInTheDocument();
   });
-
-  // Add more tests as needed
 });
-export default ServiceListing;
