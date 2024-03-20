@@ -21,14 +21,26 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "test:report": "react-scripts test --coverage --testResultsProcessor=\"jest-junit\"",
+    "test:report": "react-scripts test --coverage --watchAll=false --testResultsProcessor=\"jest-junit\"",
     "eject": "react-scripts eject"
   },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
+  "jest": {
+    "collectCoverage": true,
+    "coverageReporters": ["text", "lcov", "json", "clover", "cobertura"],
+    "coverageDirectory": "coverage",
+    "reporters": [
+      "default",
+      [
+        "jest-junit",
+        {
+          "outputDirectory": "test-results",
+          "outputName": "jest-junit.xml"
+        }
+      ]
     ]
+  },
+  "eslintConfig": {
+    "extends": ["react-app", "react-app/jest"]
   },
   "browserslist": {
     "production": [
