@@ -46,6 +46,12 @@ html, body {
     max-width: 150px; /* Adjust the max-width to fit your design */
   }
 }
+/* styles.css or your CSS file */
+.sticky-footer {
+  position: sticky;
+  bottom: 0;
+  width: 100%;
+}
 
 .status-past { color: red; }
 .status-ongoing { color: green; }

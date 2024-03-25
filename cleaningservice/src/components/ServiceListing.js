@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { FaEllipsisH, FaFilter, FaUserTie, FaUser } from 'react-icons/fa';
 import { useHistory } from 'react-router-dom';
 import livingRoomImage from '../Image/LivingRoom.png';
+import Layout from './Layout';
 
 const FilterOptions = {
   TIME: {
@@ -140,7 +141,9 @@ const ServiceListing = () => {
 
 
   return (
+    <Layout>
     <div className="container mx-auto p-4 relative">
+   
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-xl font-bold">Service Requests</h1>
         <div>
@@ -205,7 +208,9 @@ const ServiceListing = () => {
           </li>
         ))}
       </ul>
+
     </div>
+    </Layout>
   );
 };
 
