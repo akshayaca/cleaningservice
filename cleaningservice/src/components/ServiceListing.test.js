@@ -59,5 +59,4 @@ describe('ServiceListing Component', () => {
     expect(filteredListings).toHaveLength(1); // Adjust based on expected listings
   });
 
-  // Continue with more tests as needed
 });
