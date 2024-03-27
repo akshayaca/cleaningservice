@@ -4,26 +4,35 @@ import { useHistory } from 'react-router-dom';
 import livingRoomImage from '../Image/LivingRoom.png';
 import Layout from './Layout';
 
-const FilterOptions = {
-  TIME: {
+class FilterOptions {
+  static TIME = {
     TODAY: 'Today',
     THIS_WEEK: 'This week',
     ALL_TIME: 'All time'
-  },
-  STATUS: {
+  };
+
+  static STATUS = {
     ONGOING: 'Ongoing',
     PAST: 'Past',
     YET_TO_START: 'Yet to Start',
     ALL_STATUS: 'All status'
-  },
-  REQUESTED_BY: {
+  };
+
+  static REQUESTED_BY = {
     LANDLORD: 'Landlord',
     TENANT: 'Tenant'
-  }
-};
+  };
+}
 
-const today = new Date();
-const endOfWeek = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 7 - today.getDay());
+class ServiceRequest {
+  constructor(index) {
+    this.id = index;
+    this.title = `Property Title ${index + 1}`;
+    this.dueBy = new Date(new Date().setDate(new Date().getDate() + index)); // index days from now
+    this.status = index % 3 === 0 ? 'Ongoing' : index % 3 === 1 ? 'Past' : 'Yet to Start';
+    this.isLandlord = index % 2 === 0;
+  }
+}
 
 const ServiceListing = () => {
   const history = useHistory();
@@ -41,19 +50,10 @@ const ServiceListing = () => {
     };
 
     document.addEventListener('mousedown', handleOutsideClick);
-
-    return () => {
-      document.removeEventListener('mousedown', handleOutsideClick);
-    };
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
   }, []);
 
-  const serviceRequests = new Array(8).fill(null).map((_, index) => ({
-    id: index,
-    title: `Property Title ${index + 1}`,
-    dueBy: new Date(new Date().setDate(new Date().getDate() + index)), // for demonstration, index days from now
-    status: index % 3 === 0 ? 'Ongoing' : index % 3 === 1 ? 'Past' : 'Yet to Start', // alternating status for demonstration
-    isLandlord: index % 2 === 0
-  }));
+  const serviceRequests = Array.from({ length: 8 }, (_, index) => new ServiceRequest(index));
 
   const applyFilter = (option, type) => {
     if (type === 'TIME') {
@@ -72,50 +72,52 @@ const ServiceListing = () => {
     setRequestedByFilter('');
   };
 
+  const today = new Date();
+  const endOfWeek = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 7 - today.getDay());
+
   const filteredRequests = serviceRequests.filter((request) => {
-    // Time filtering
     const matchesTimeFilter = (timeFilter === FilterOptions.TIME.ALL_TIME) ||
                               (timeFilter === FilterOptions.TIME.TODAY && request.dueBy.toDateString() === today.toDateString()) ||
                               (timeFilter === FilterOptions.TIME.THIS_WEEK && request.dueBy < endOfWeek);
 
-    // Status filtering
-    const matchesStatusFilter =statusFilter === (FilterOptions.STATUS.ALL_STATUS) ||
-                                                (statusFilter === request.status) ||
-                                                (statusFilter === FilterOptions.STATUS.YET_TO_START && request.status === 'Yet to Start');
+    const matchesStatusFilter = (statusFilter === FilterOptions.STATUS.ALL_STATUS) ||
+                                (statusFilter === request.status) ||
+                                (statusFilter === FilterOptions.STATUS.YET_TO_START && request.status === 'Yet to Start');
 
-    
-    // Requested by filtering
     const matchesRequestedByFilter = (!requestedByFilter) ||
                                      (requestedByFilter === FilterOptions.REQUESTED_BY.LANDLORD && request.isLandlord) ||
                                      (requestedByFilter === FilterOptions.REQUESTED_BY.TENANT && !request.isLandlord);
 
     return matchesTimeFilter && matchesStatusFilter && matchesRequestedByFilter;
-  
   });
-  
 
   const renderFilterMenu = () => (
     <div ref={filterMenuRef} className="absolute right-0 mt-2 py-2 w-48 bg-white rounded-md shadow-xl z-20">
-      <div className="text-lg px-4 py-2 text-gray-800">Time</div>
+      {/* Added data-testid for testing */}
+      <div data-testid="filter-time" className="text-lg px-4 py-2 text-gray-800">Time</div>
       {Object.values(FilterOptions.TIME).map((option) => (
         <div
           key={option}
+          data-testid={`filter-time-${option.toLowerCase().replace(/\s+/g, '-')}`} // Ensures unique and valid IDs, e.g., "filter-time-this-week"
           className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 cursor-pointer"
           onClick={() => applyFilter(option, 'TIME')}
         >
           {option}
         </div>
       ))}
-      <div className="text-lg px-4 py-2 text-gray-800">Status</div>
+      {/* Added data-testid for testing */}
+      <div data-testid="filter-status" className="text-lg px-4 py-2 text-gray-800">Status</div>
       {Object.values(FilterOptions.STATUS).map((option) => (
         <div
           key={option}
+          data-testid={`filter-status-${option.toLowerCase().replace(/\s+/g, '-')}`} // Example: filter-status-all-status
           className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 cursor-pointer"
           onClick={() => applyFilter(option, 'STATUS')}
         >
           {option}
         </div>
       ))}
+      {/* This div is commented out based on your request to ignore the "Requested by" filter
       <div className="text-lg px-4 py-2 text-gray-800">Requested by</div>
       {Object.values(FilterOptions.REQUESTED_BY).map((option) => (
         <div
@@ -125,7 +127,8 @@ const ServiceListing = () => {
         >
           {option}
         </div>
- ))}
+      ))}
+      */}
     </div>
   );
 
@@ -150,6 +153,7 @@ const ServiceListing = () => {
           <button
             className="p-2 rounded-md bg-gray-200 hover:bg-gray-300 transition-colors"
             onClick={() => setShowFilterMenu(!showFilterMenu)}
+            data-testid="filter-toggle-button"
           >
             <FaFilter className="text-lg" />
           </button>
