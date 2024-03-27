@@ -11,7 +11,7 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import ServiceListing from './ServiceListing';
+import ServiceListing from '../ServiceListing';
 import { BrowserRouter as Router } from 'react-router-dom';
 
 // Mock useHistory from react-router-dom
