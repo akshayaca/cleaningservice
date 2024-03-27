@@ -1,6 +1,6 @@
 /*
   File: Footer.test.js
-  Description: Unit tests for ServiceListing component.
+  Description: Unit tests for Footer component.
   Author: Akshayarekha Subhramaniyan
   Date: 27/03/2024
 
