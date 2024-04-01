@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FaEllipsisH, FaFilter, FaUserTie, FaUser } from 'react-icons/fa';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom'; // Use useNavigate instead of useHistory
 import livingRoomImage from '../Image/LivingRoom.png';
 import Layout from './Layout';
 
@@ -28,14 +28,14 @@ class ServiceRequest {
   constructor(index) {
     this.id = index;
     this.title = `Property Title ${index + 1}`;
-    this.dueBy = new Date(new Date().setDate(new Date().getDate() + index)); // index days from now
+    this.dueBy = new Date(new Date().setDate(new Date().getDate() + index));
     this.status = index % 3 === 0 ? 'Ongoing' : index % 3 === 1 ? 'Past' : 'Yet to Start';
     this.isLandlord = index % 2 === 0;
   }
 }
 
 const ServiceListing = () => {
-  const history = useHistory();
+  const navigate = useNavigate(); // Initialized useNavigate hook here
   const [timeFilter, setTimeFilter] = useState(FilterOptions.TIME.ALL_TIME);
   const [statusFilter, setStatusFilter] = useState(FilterOptions.STATUS.ALL_STATUS);
   const [requestedByFilter, setRequestedByFilter] = useState('');
@@ -71,7 +71,6 @@ const ServiceListing = () => {
     setStatusFilter(FilterOptions.STATUS.ALL_STATUS);
     setRequestedByFilter('');
   };
-
   const today = new Date();
   const endOfWeek = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 7 - today.getDay());
 
@@ -139,7 +138,7 @@ const ServiceListing = () => {
     return title;
   };
   const navigateToDetails = (id) => {
-    history.push(`/request/${id}`);
+   navigate(`/request/${id}`);
   };
 
 

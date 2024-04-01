@@ -1,34 +1,41 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const fs = require('fs');
-const path = require('path');
+const { MongoClient } = require('mongodb');
 
 const app = express();
-const PORT = 5001; // Make sure this port is different from your React app's port
+const PORT = 5001;
 
 app.use(bodyParser.json());
 app.use(cors());
 
-// Helper function to read the database file
-const readDB = () => {
-    const dbPath = path.join(__dirname, 'src', 'backend', 'db.json');
-    const dbFile = fs.readFileSync(dbPath);
-    return JSON.parse(dbFile.toString());
-  };
+// MongoDB connection string
+const uri = "mongodb+srv://akshayarekhas:KRfsm3QjJk6HoJo7@creds.vmeznli.mongodb.net/";
+const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 
-app.post('/login', (req, res) => {
-  const { username, password } = req.body;
-  const db = readDB();
-  const user = db.employees.find(u => u.email === username && u.password === password);
-  
-  if (user) {
-    res.json({ success: true, message: "Login successful" });
-  } else {
-    res.status(401).json({ success: false, message: "Invalid credentials" });
-  }
-});
+async function main() {
+    try {
+        await client.connect();
+        const database = client.db("logincreds");
+        const collection = database.collection("creds");
 
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
+        app.post('/login', async (req, res) => {
+            const { username, password } = req.body;
+            const user = await collection.findOne({ email: username, password: password });
+
+            if (user) {
+                res.json({ success: true, message: "Login successful" });
+            } else {
+                res.status(401).json({ success: false, message: "Invalid credentials" });
+            }
+        });
+
+        app.listen(PORT, () => {
+            console.log(`Server running on http://localhost:${PORT}`);
+        });
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+main().catch(console.error);
