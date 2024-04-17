@@ -1,15 +1,12 @@
-// src/index.js or App.js, depending on your structure
-
 import React from 'react';
 import ReactDOM from 'react-dom';
-import App from './components/App';
+import App from './components/App.js'; // Adjust if you have a different file structure
 import { AuthProvider } from './contexts/AuthContext';
+import './css/App.css';
 
 ReactDOM.render(
-  <React.StrictMode>
     <AuthProvider>
       <App />
-    </AuthProvider>
-  </React.StrictMode>,
+    </AuthProvider>,
   document.getElementById('root')
 );

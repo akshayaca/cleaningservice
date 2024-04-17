@@ -3,6 +3,8 @@ import { FaEllipsisH, FaFilter, FaUserTie, FaUser } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom'; // Use useNavigate instead of useHistory
 import livingRoomImage from '../Image/LivingRoom.png';
 import Layout from './Layout';
+import axios from 'axios'; 
+import { parseISO } from 'date-fns';
 
 class FilterOptions {
   static TIME = {
@@ -14,7 +16,7 @@ class FilterOptions {
   static STATUS = {
     ONGOING: 'Ongoing',
     PAST: 'Past',
-    YET_TO_START: 'Yet to Start',
+    YET_TO_START: 'Yet to start',
     ALL_STATUS: 'All status'
   };
 
@@ -29,20 +31,59 @@ class ServiceRequest {
     this.id = index;
     this.title = `Property Title ${index + 1}`;
     this.dueBy = new Date(new Date().setDate(new Date().getDate() + index));
-    this.status = index % 3 === 0 ? 'Ongoing' : index % 3 === 1 ? 'Past' : 'Yet to Start';
+    this.status = index % 3 === 0 ? 'Ongoing' : index % 3 === 1 ? 'Past' : 'Yet to start';
     this.isLandlord = index % 2 === 0;
   }
 }
 
 const ServiceListing = () => {
-  const navigate = useNavigate(); // Initialized useNavigate hook here
-  const [timeFilter, setTimeFilter] = useState(FilterOptions.TIME.ALL_TIME);
-  const [statusFilter, setStatusFilter] = useState(FilterOptions.STATUS.ALL_STATUS);
+  const navigate = useNavigate();
+  const [serviceRequests, setServiceRequests] = useState([]);
+  const [timeFilter, setTimeFilter] = useState('All time');
+  const [statusFilter, setStatusFilter] = useState('All status');
   const [requestedByFilter, setRequestedByFilter] = useState('');
   const [showFilterMenu, setShowFilterMenu] = useState(false);
   const filterMenuRef = useRef(null);
 
+
   useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get('http://localhost:5001/api/requests/all'); // Adjust this URL to match your backend route
+        const formattedRequests = response.data.map(request => {
+          // Use the correct property name from your backend, which is 'due'
+          if (typeof request.due !== 'string') {
+            console.error('Invalid or missing due field:', request);
+            return {
+              ...request,
+              dueBy: 'Invalid Date', // Use a placeholder or default value
+            };
+          }
+    
+          try {
+            // Parse and format the 'due' field
+            const parsedDate = parseISO(request.due);
+            const formattedDueBy = format(parsedDate, 'MM-dd-yyyy');
+            return {
+              ...request,
+              dueBy: formattedDueBy, // Store the formatted date in 'dueBy'
+            };
+          } catch (parseError) {
+            // If parsing fails, log the error and set a placeholder
+            console.error('Error parsing date:', request.due, parseError);
+            return {
+              ...request,
+              dueBy: 'Invalid Date', // Use a placeholder or default value
+            };
+          }
+        });
+    
+        setServiceRequests(formattedRequests);
+      } catch (error) {
+        console.error('Failed to fetch service requests:', error);
+      }
+    };
+    fetchData();
     const handleOutsideClick = (event) => {
       if (filterMenuRef.current && !filterMenuRef.current.contains(event.target)) {
         setShowFilterMenu(false);
@@ -53,7 +94,22 @@ const ServiceListing = () => {
     return () => document.removeEventListener('mousedown', handleOutsideClick);
   }, []);
 
-  const serviceRequests = Array.from({ length: 8 }, (_, index) => new ServiceRequest(index));
+  const format = (date, formatStr) => {
+    const pad = (num) => (num < 10 ? `0${num}` : num);
+    if (!date || isNaN(date.getTime())) {
+      return 'Invalid Date';
+    }
+    const day = pad(date.getDate());
+    const month = pad(date.getMonth() + 1); // Month is 0-indexed
+    const year = date.getFullYear();
+    
+    switch (formatStr) {
+      case 'MM-dd-yyyy':
+        return `${month}-${day}-${year}`;
+      default:
+        return date.toISOString();
+    }
+  };
 
   const applyFilter = (option, type) => {
     if (type === 'TIME') {
@@ -76,12 +132,12 @@ const ServiceListing = () => {
 
   const filteredRequests = serviceRequests.filter((request) => {
     const matchesTimeFilter = (timeFilter === FilterOptions.TIME.ALL_TIME) ||
-                              (timeFilter === FilterOptions.TIME.TODAY && request.dueBy.toDateString() === today.toDateString()) ||
+                              (timeFilter === FilterOptions.TIME.TODAY && request.dueBy === today) ||
                               (timeFilter === FilterOptions.TIME.THIS_WEEK && request.dueBy < endOfWeek);
 
     const matchesStatusFilter = (statusFilter === FilterOptions.STATUS.ALL_STATUS) ||
                                 (statusFilter === request.status) ||
-                                (statusFilter === FilterOptions.STATUS.YET_TO_START && request.status === 'Yet to Start');
+                                (statusFilter === FilterOptions.STATUS.YET_TO_START && request.status === 'Yet to start');
 
     const matchesRequestedByFilter = (!requestedByFilter) ||
                                      (requestedByFilter === FilterOptions.REQUESTED_BY.LANDLORD && request.isLandlord) ||
@@ -116,18 +172,6 @@ const ServiceListing = () => {
           {option}
         </div>
       ))}
-      {/* This div is commented out based on your request to ignore the "Requested by" filter
-      <div className="text-lg px-4 py-2 text-gray-800">Requested by</div>
-      {Object.values(FilterOptions.REQUESTED_BY).map((option) => (
-        <div
-          key={option}
-          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 cursor-pointer"
-          onClick={() => applyFilter(option, 'REQUESTED_BY')}
-        >
-          {option}
-        </div>
-      ))}
-      */}
     </div>
   );
 
@@ -138,7 +182,7 @@ const ServiceListing = () => {
     return title;
   };
   const navigateToDetails = (id) => {
-   navigate(`/request/${id}`);
+   navigate(`/api/request/${id}`);
   };
 
 
@@ -194,12 +238,12 @@ const ServiceListing = () => {
             </div>
             <div className="flex items-center">
               <span className="mr-4 whitespace-nowrap">
-                Due by {request.dueBy.toDateString()}
+                Due by {request.dueBy}
               </span>
               <span className={`responsive-hide mr-4 whitespace-nowrap ${
                 request.status === 'Past' ? 'text-red-500' :
                 request.status === 'Ongoing' ? 'text-green-500' :
-                request.status === 'Yet to Start' ? 'text-yellow-500' : ''
+                request.status === 'Yet to start' ? 'text-yellow-500' : ''
               }`}>
                 {request.status}
               </span>

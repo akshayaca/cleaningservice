@@ -1,4 +1,6 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef,useEffect } from 'react';
+import { useParams } from 'react-router-dom';
+
 import Header from './Header';
 import Footer from './Footer';
 import { FaArrowLeft, FaArrowRight } from 'react-icons/fa';
@@ -6,12 +8,15 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import Select from 'react-select';
 import Modal from 'react-modal';
+import axios from 'axios';
+import { format } from 'date-fns';
 
 // Replace this with the actual path to your image asset
 import livingRoomImage from '../Image/LivingRoom.png';
 
 const RequestDetails = () => {
   const totalSlides = 8;
+  const { id } = useParams();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [selectedImage, setSelectedImage] = useState(null);
   const [modalIsOpen, setModalIsOpen] = useState(false);
@@ -20,7 +25,42 @@ const RequestDetails = () => {
   const [commencementDate, setCommencementDate] = useState(null);
   const [proof, setProof] = useState(null);
   const [selectedAssignee, setSelectedAssignee] = useState(null); // State to store the selected assignee
-
+  const [propertyDetails, setPropertyDetails] = useState({
+    title: '',
+    description: '',
+    location: '',
+    status: '',
+    due: new Date(), // Default to current date, update with API response
+  });
+  useEffect(() => {
+    const fetchPropertyDetails = async () => {
+      try {
+        // Replace with your actual API endpoint
+        const response = await axios.get(`http://localhost:5001/api/requests/${id}`);
+        const item = response.data[0];
+        if (item) {
+          setPropertyDetails({
+            title: item.title || '',
+            description: item.description || '',
+            location: item.location || {},
+            status: item.status || '',
+            due: item.due ? new Date(item.due) : new Date(),
+          });
+        } else {
+          // Handle the case where the array is empty or the data isn't as expected
+          console.error('Item not found or the structure is not as expected', response.data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch property details:', error);
+      }
+    };
+  
+    if (id) {
+      fetchPropertyDetails();
+    } else {
+      console.error('No ID provided for fetching property details');
+    }
+  }, [id]);
   const fileInputRef = useRef();
 
   const handleSlideChange = (direction) => {
@@ -51,12 +91,36 @@ const RequestDetails = () => {
       setProof(file);
     }
   };
+  const formatAddress = (location) => {
+    if (!location) return 'Loading...';
+    const { addressLine1, addressLine2, city, state, country, zipCode } = location;
+    return `${addressLine1}${addressLine2 ? `, ${addressLine2}` : ''}, ${city}, ${state}, ${zipCode}, ${country}`;
+  };
+  
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const confirmSubmission = window.confirm("Are you sure that the proof has been verified?");
-    if (confirmSubmission) {
+    if (confirmSubmission && proof) {
       console.log("Submission confirmed");
-      // Redirect to listings page and update status logic should be implemented here
+  
+      const formData = new FormData();
+      formData.append('requestId', id);
+      formData.append('title', propertyDetails.title);
+      formData.append('status', propertyDetails.status);
+      formData.append('dateOfCommencement', commencementDate);
+      formData.append('image', proof);
+  
+      try {
+        const response = await axios.post('http://localhost:5001/api/service-verifications', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+        console.log(response.data);
+        // Handle the response from the server
+      } catch (error) {
+        console.error('Failed to submit service verification:', error);
+      }
     }
   };
 
@@ -95,11 +159,18 @@ const RequestDetails = () => {
         
         {/* Property details */}
         <div>
-          <h2 className="text-2xl font-bold">Property Title</h2>
-          <p>Description and details about the property including amenities, BHK, etc., sufficient for the cleaning company to know. Cleaning request specification like clean bathroom etc.</p>
-          <p><strong>Address:</strong> [Property Address]</p>
-          <p><strong>Requested Date:</strong> [DD/MM/YYYY]</p>
-        </div>
+        <h2 className="text-2xl font-bold">Title</h2>
+       <h2>  {propertyDetails.title || 'Loading...'}</h2>
+        <p><strong>Description</strong></p>
+       <p> {propertyDetails.description || 'Loading details...'}</p>
+        <p><strong>Address:</strong></p>
+        <p>{propertyDetails.location.addressLine1}</p>
+        <p>{propertyDetails.location.addressLine2}</p>
+        <p>{propertyDetails.location.city}, {propertyDetails.location.state} {propertyDetails.location.zipCode}</p>
+        <p>{propertyDetails.location.country}</p>
+        <p><strong>Due Date:</strong> {format(propertyDetails.due, 'MM/dd/yyyy')}</p>
+        <p><strong>Status:</strong> {propertyDetails.status || 'Loading...'}</p>
+      </div>
 
         <Modal isOpen={modalIsOpen} onRequestClose={closeModal} style={{
           content: {
@@ -123,13 +194,14 @@ const RequestDetails = () => {
       {/* Right pane adjustments */}
       <div className="space-y-4">
         {/* Date Picker now represents the due date for the property from listing page */}
+        <div>
+        <p><strong>Due Date:</strong></p>
         <DatePicker
-          selected={new Date()} // This should dynamically represent the due date
-          onChange={(date) => console.log(date)}
+          selected={propertyDetails.due}
           className="border p-2 rounded w-full"
-          disabled={true} // Assume it's for display purposes only
+          disabled={true}
         />
-
+      </div>
         {/* Assignee Selector */}
         <Select
           options={[{ value: 'teamLead1', label: 'Team Lead 1' }, { value: 'teamLead2', label: 'Team Lead 2' }]}

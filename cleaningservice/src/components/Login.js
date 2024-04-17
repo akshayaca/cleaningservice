@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState,useContext,useEffect } from 'react';
+import { useNavigate } from 'react-router-dom'; // Import for redirection
+import { AuthContext } from '../contexts/AuthContext'; 
 import { FaHotel } from 'react-icons/fa';
 
 const LoginHeader = () => {
@@ -29,31 +31,26 @@ const LoginFooter = () => {
     );
 };
 
-const Login = ({ onLoginSuccess }) => {
-  const [username, setUsername] = useState('');
+const Login = () => {
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const { isAuthenticated, login } = useContext(AuthContext);
+  const navigate = useNavigate();
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await fetch('http://localhost:5001/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, password }),
-      });
-      const data = await response.json();
-      if (data.success) {
-        onLoginSuccess();
-      } else {
-        setError('Invalid credentials');
-      }
-    } catch (error) {
-      setError('Failed to login');
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/'); // Redirect when already logged in
     }
-  }
+  }, [isAuthenticated, navigate]);
+  const handleLogin = async (e) => {
+      e.preventDefault();
+      try {
+          await login(email, password);
+      } catch (error) {
+          setError('Failed to login'); // Handle errors from login function
+      }
+  };
   return (
     <div className="flex flex-col h-screen overflow-hidden">
       <LoginHeader />
@@ -61,12 +58,12 @@ const Login = ({ onLoginSuccess }) => {
         <div className="w-full max-w-md">
           <form onSubmit={handleLogin} className="bg-white shadow-md rounded px-8 pt-6 pb-8">
             <div className="mb-4">
-              <label htmlFor="username" className="block text-gray-700 text-sm font-bold mb-2">Username</label>
+              <label htmlFor="email" className="block text-gray-700 text-sm font-bold mb-2">Username</label>
               <input
-                id="username"
+                id="email"
                 type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 required
                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
               />

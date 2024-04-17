@@ -17,7 +17,7 @@ const AppWrapper = () => {
 };
 
 const App = () => {
-  const { isLoggedIn, login } = useAuth();
+  const { isLoggedIn, login,isAuthenticated } = useAuth();
   let location = useLocation();
 
   return (
@@ -25,9 +25,9 @@ const App = () => {
       {location.pathname !== '/login' && <Header />} {/* Conditionally render Header */}
       <main className='main-content'>
         <Routes>
-          <Route path="/login" element={isLoggedIn ? <Navigate to="/" replace /> : <Login onLoginSuccess={login} />} />
-          <Route path="/" element={isLoggedIn ? <ServiceListing /> : <Navigate to="/login" replace />} />
-          <Route path="/request/:id" element={<RequestDetails />} />
+          <Route path="/login" element={isAuthenticated ? <Navigate to="/" replace /> : <Login />} />
+          <Route path="/" element={isAuthenticated ? <ServiceListing /> : <Navigate to="/login" replace />} />
+          <Route path="/api/request/:id" element={<RequestDetails />} />
           {/* More routes as needed */}
         </Routes>
       </main>
